@@ -206,3 +206,31 @@ docker compose up -d --build
 
 Поштові повідомлення Mailpit у поточній конфігурації не мають
 окремого тому та можуть бути втрачені при перестворенні контейнера.
+
+## Скріншоти перевірки API
+
+Для перевірки використано два облікові записи: `andrii` та `second_user`.
+Контакт із `id: 1` створено користувачем `andrii`. Перевірки доступу до
+чужого контакту виконано від імені `second_user`. Аватар завантажено
+для `second_user`.
+
+| Файл | Перевірка | Результат |
+| --- | --- | --- |
+| [01-register.png](screenshots/01-register.png) | Реєстрація користувача | `201 Created` |
+| [02-email-verified.png](screenshots/02-email-verified.png) | Підтвердження електронної пошти | `Email successfully verified` |
+| [03-unverified-access.png](screenshots/03-unverified-access.png) | Доступ до контактів без підтвердження пошти | `403 Forbidden` |
+| [04-me.png](screenshots/04-me.png) | Отримання профілю `andrii` через `GET /me` | `200 OK`, `email_verified: true` |
+| [05-rate-limit.png](screenshots/05-rate-limit.png) | Перевищення ліміту запитів до `/me` | `429 Too Many Requests` |
+| [06-private-list.png](screenshots/06-private-list.png) | Перегляд списку контактів користувачем `second_user` | `200 OK`, порожній список `[]` |
+| [07-private-read.png](screenshots/07-private-read.png) | Спроба прочитати чужий контакт | `404 Not Found` |
+| [08-private-update.png](screenshots/08-private-update.png) | Спроба змінити чужий контакт | `404 Not Found` |
+| [09-private-delete.png](screenshots/09-private-delete.png) | Спроба видалити чужий контакт | `404 Not Found` |
+| [10-avatar.png](screenshots/10-avatar.png) | Завантаження аватара через `PATCH /me/avatar` | `200 OK`, URL зображення у Cloudinary |
+| [10-avatar-1.png](screenshots/10-avatar-1.png) | Відкриття аватара за отриманим URL | Зображення відображається у браузері |
+| [11-invalid-login.png](screenshots/11-invalid-login.png) | Вхід із некоректними обліковими даними | `401 Unauthorized` |
+| [12-duplicate-email.png](screenshots/12-duplicate-email.png) | Реєстрація з уже зареєстрованою поштою | `409 Conflict` |
+
+Додатково перевірено CORS preflight-запит: `OPTIONS /contacts/`
+з `Origin: http://localhost:3000`, методом `POST` та заголовками
+`authorization,content-type`. Сервер повернув `200 OK` і дозволив
+зазначені origin, метод та заголовки.
